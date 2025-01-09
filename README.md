@@ -2,6 +2,8 @@
 
 A modern task management and calendar application built with React, TypeScript, and Vite.
 
+![Calendar](public/calendar.png)
+
 ## 🚀 Features
 
 - Interactive calendar interface with month navigation
