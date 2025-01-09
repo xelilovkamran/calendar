@@ -1,13 +1,7 @@
 import { useState } from "react";
-import styled from "@emotion/styled";
-import { Task } from "../types";
-import TaskCard from "./TaskCard";
-
-const Container = styled.div`
-  min-height: 10px;
-  display: flex;
-  flex-direction: column;
-`;
+import { Task } from "../../types";
+import TaskCard from "../TaskCard";
+import * as S from "./styles";
 
 interface TaskListProps {
   tasks: Task[];
@@ -70,7 +64,7 @@ const TaskList = ({
   };
 
   return (
-    <Container>
+    <S.Container>
       {tasks
         .sort((a, b) => a.position - b.position)
         .map((task) => (
@@ -85,7 +79,7 @@ const TaskList = ({
             onDelete={onTaskDelete}
           />
         ))}
-    </Container>
+    </S.Container>
   );
 };
 

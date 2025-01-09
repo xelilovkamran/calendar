@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import styled from "@emotion/styled";
 import {
   startOfMonth,
   endOfMonth,
@@ -13,281 +12,16 @@ import {
   addWeeks,
   subWeeks,
 } from "date-fns";
-import type { Task, Holiday, DayCell } from "../types";
-import { FaAngleDown, FaAngleUp, FaSearch } from "react-icons/fa";
+import type { Task, Holiday, DayCell } from "../../types";
+import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import { v4 as uuidv4 } from "uuid";
-import TaskList from "./TaskList";
-import TaskModal from "./TaskModal";
+import TaskList from "../TaskList";
+import TaskModal from "../TaskModal";
+import * as S from "./styles";
 
 interface TasksState {
   [date: string]: Task[];
 }
-
-const CalendarContainer = styled.div`
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-`;
-
-const TopBar = styled.div`
-  background-color: #ff9800;
-  color: white;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const Logo = styled.div`
-  font-weight: bold;
-  font-size: 18px;
-`;
-
-const HeaderContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-  justify-content: center;
-`;
-
-const NavigationButtons = styled.div`
-  display: flex;
-  margin-right: 8px;
-  gap: 1px;
-`;
-
-const NavButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: white;
-  font-size: 16px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 3px;
-  transition: all 0.2s ease;
-  padding: 0;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-  }
-
-  &:active {
-    background-color: rgba(0, 0, 0, 0.2);
-  }
-
-  &:focus {
-    outline: none;
-  }
-`;
-
-const MonthTitle = styled.h2`
-  margin: 0;
-  font-size: 20px;
-  font-weight: normal;
-`;
-
-const ViewControls = styled.div`
-  display: flex;
-  background-color: rgba(0, 0, 0, 0.1);
-  padding: 2px;
-  border-radius: 3px;
-`;
-
-const ViewButton = styled.button<{ active?: boolean }>`
-  background-color: ${(props) => (props.active ? "#fff" : "transparent")};
-  color: ${(props) => (props.active ? "#172b4d" : "#fff")};
-  border: none;
-  padding: 4px 12px;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  min-width: 60px;
-  outline: none;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:hover {
-    background-color: ${(props) =>
-      props.active ? "#fff" : "rgba(255, 255, 255, 0.1)"};
-  }
-`;
-
-const WeekDaysHeader = styled.div`
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const DayHeader = styled.div`
-  text-align: center;
-  padding: 12px 8px;
-  color: #666;
-  font-size: 14px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const CalendarGrid = styled.div<{ isWeekView: boolean }>`
-  display: grid;
-  grid-template-columns: repeat(7, minmax(200px, 1fr));
-  grid-auto-rows: ${(props) =>
-    props.isWeekView ? "1fr" : "minmax(180px, calc((100vh - 120px) / 6))"};
-  gap: 1px;
-  background-color: #e0e0e0;
-  flex: 1;
-  overflow: auto;
-  min-width: 100%;
-`;
-
-const Cell = styled.div<{ isCurrentMonth: boolean; isDragOver?: boolean }>`
-  height: 100%;
-  min-height: ${(props) => (props.isCurrentMonth ? "100%" : "180px")};
-  min-width: 200px;
-  padding: 8px;
-  background-color: ${(props) =>
-    props.isDragOver
-      ? "#e3f2fd"
-      : props.isCurrentMonth
-      ? "#ffffff"
-      : "#f5f5f5"};
-  border-right: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition: background-color 0.2s ease;
-`;
-
-const DateLabel = styled.div`
-  color: #666;
-  margin-bottom: 8px;
-  flex-shrink: 0;
-`;
-
-const TaskCount = styled.span`
-  color: #666;
-  font-size: 12px;
-  margin-left: 4px;
-`;
-
-const TasksContainer = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-  max-height: calc(100% - 32px);
-
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.2);
-    }
-  }
-`;
-
-const AddButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 3px;
-  color: white;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: background-color 0.2s ease;
-  margin-right: 16px;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-`;
-
-const HolidayContainer = styled.div`
-  margin-bottom: 8px;
-`;
-
-const Holiday = styled.div`
-  background-color: #ebecf0;
-  border-radius: 3px;
-  padding: 4px 8px;
-  margin-bottom: 4px;
-  font-size: 12px;
-  color: #172b4d;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: bold;
-
-  &:before {
-    content: "🎉";
-    font-size: 14px;
-  }
-`;
-
-const SearchContainer = styled.div`
-  position: relative;
-  margin-right: 16px;
-  min-width: 200px;
-`;
-
-const SearchInput = styled.input`
-  padding: 6px 12px 6px 32px;
-  border: none;
-  border-radius: 3px;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 14px;
-  width: 100%;
-  transition: all 0.2s ease;
-
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  &:focus {
-    outline: none;
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-`;
-
-const SearchIcon = styled(FaSearch)`
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-`;
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -527,50 +261,50 @@ const Calendar = () => {
   };
 
   return (
-    <CalendarContainer>
-      <TopBar>
-        <Logo>Calendar</Logo>
-        <HeaderContent>
-          <NavigationButtons>
-            <NavButton onClick={handlePrevPeriod}>
+    <S.CalendarContainer>
+      <S.TopBar>
+        <S.Logo>Calendar</S.Logo>
+        <S.HeaderContent>
+          <S.NavigationButtons>
+            <S.NavButton onClick={handlePrevPeriod}>
               <FaAngleUp />
-            </NavButton>
-            <NavButton onClick={handleNextPeriod}>
+            </S.NavButton>
+            <S.NavButton onClick={handleNextPeriod}>
               <FaAngleDown />
-            </NavButton>
-          </NavigationButtons>
-          <MonthTitle>
+            </S.NavButton>
+          </S.NavigationButtons>
+          <S.MonthTitle>
             {view === "month"
               ? format(currentDate, "MMMM yyyy")
               : `Week of ${format(startOfWeek(currentDate), "MMMM d, yyyy")}`}
-          </MonthTitle>
-        </HeaderContent>
-        <SearchContainer>
-          <SearchIcon />
-          <SearchInput
+          </S.MonthTitle>
+        </S.HeaderContent>
+        <S.SearchContainer>
+          <S.SearchIcon />
+          <S.SearchInput
             placeholder="Search tasks..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
-        </SearchContainer>
-        <AddButton onClick={() => setIsAddModalOpen(true)}>
+        </S.SearchContainer>
+        <S.AddButton onClick={() => setIsAddModalOpen(true)}>
           + Add task
-        </AddButton>
-        <ViewControls>
-          <ViewButton
+        </S.AddButton>
+        <S.ViewControls>
+          <S.ViewButton
             active={view === "week"}
             onClick={() => handleViewChange("week")}
           >
             Week
-          </ViewButton>
-          <ViewButton
+          </S.ViewButton>
+          <S.ViewButton
             active={view === "month"}
             onClick={() => handleViewChange("month")}
           >
             Month
-          </ViewButton>
-        </ViewControls>
-      </TopBar>
+          </S.ViewButton>
+        </S.ViewControls>
+      </S.TopBar>
 
       <TaskModal
         isOpen={isAddModalOpen}
@@ -579,19 +313,19 @@ const Calendar = () => {
         defaultDate={format(currentDate, "yyyy-MM-dd")}
       />
 
-      <WeekDaysHeader>
+      <S.WeekDaysHeader>
         {weekDays.map((day) => (
-          <DayHeader key={day}>{day}</DayHeader>
+          <S.DayHeader key={day}>{day}</S.DayHeader>
         ))}
-      </WeekDaysHeader>
+      </S.WeekDaysHeader>
 
-      <CalendarGrid isWeekView={view === "week"}>
+      <S.CalendarGrid isWeekView={view === "week"}>
         {days.map((day) => {
           const date = new Date(day.date);
           const isCurrentMonth = isSameMonth(date, currentDate);
 
           return (
-            <Cell
+            <S.Cell
               key={day.date}
               isCurrentMonth={view === "week" ? true : isCurrentMonth}
               isDragOver={dragOverDate === day.date}
@@ -599,22 +333,22 @@ const Calendar = () => {
               onDragLeave={handleCellDragLeave}
               onDrop={(e) => handleCellDrop(e, day.date)}
             >
-              <DateLabel>
+              <S.DateLabel>
                 {format(date, "d")}
                 {getFilteredTasks(day.date)?.length > 0 && (
-                  <TaskCount>
+                  <S.TaskCount>
                     {getFilteredTasks(day.date).length} card
                     {getFilteredTasks(day.date).length !== 1 ? "s" : ""}
-                  </TaskCount>
+                  </S.TaskCount>
                 )}
-              </DateLabel>
-              <TasksContainer>
+              </S.DateLabel>
+              <S.TasksContainer>
                 {day.holidays.length > 0 && (
-                  <HolidayContainer>
+                  <S.HolidayContainer>
                     {day.holidays.map((holiday) => (
-                      <Holiday key={holiday.name}>{holiday.name}</Holiday>
+                      <S.Holiday key={holiday.name}>{holiday.name}</S.Holiday>
                     ))}
-                  </HolidayContainer>
+                  </S.HolidayContainer>
                 )}
                 <TaskList
                   tasks={getFilteredTasks(day.date)}
@@ -630,12 +364,12 @@ const Calendar = () => {
                   }
                   onTaskDragEnd={handleTaskDragEnd}
                 />
-              </TasksContainer>
-            </Cell>
+              </S.TasksContainer>
+            </S.Cell>
           );
         })}
-      </CalendarGrid>
-    </CalendarContainer>
+      </S.CalendarGrid>
+    </S.CalendarContainer>
   );
 };
 

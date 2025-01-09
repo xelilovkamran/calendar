@@ -1,8 +1,6 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
-import { FaTimes, FaRegCalendarAlt } from "react-icons/fa";
 
-const ModalOverlay = styled.div`
+export const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
@@ -26,7 +24,7 @@ const ModalOverlay = styled.div`
   }
 `;
 
-const ModalContent = styled.div`
+export const ModalContent = styled.div`
   background: white;
   border-radius: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -48,7 +46,7 @@ const ModalContent = styled.div`
   }
 `;
 
-const CloseButton = styled.button`
+export const CloseButton = styled.button`
   position: absolute;
   top: 16px;
   right: 16px;
@@ -69,26 +67,26 @@ const CloseButton = styled.button`
   }
 `;
 
-const Title = styled.h3`
+export const Title = styled.h3`
   margin: 0 0 24px;
   font-size: 20px;
   font-weight: 600;
   color: #172b4d;
 `;
 
-const Form = styled.form`
+export const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 20px;
 `;
 
-const FormGroup = styled.div`
+export const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
 `;
 
-const Label = styled.label`
+export const Label = styled.label`
   font-size: 14px;
   color: #172b4d;
   font-weight: 500;
@@ -97,7 +95,7 @@ const Label = styled.label`
   gap: 8px;
 `;
 
-const TextArea = styled.textarea`
+export const TextArea = styled.textarea`
   width: 100%;
   padding: 12px;
   border: 2px solid #e2e8f0;
@@ -117,7 +115,6 @@ const TextArea = styled.textarea`
 
   &:focus {
     background-color: #fff;
-    // border-color: #7c3aed;
     border-color: #ff9800;
     outline: none;
     box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
@@ -128,7 +125,7 @@ const TextArea = styled.textarea`
   }
 `;
 
-const DateInputWrapper = styled.div`
+export const DateInputWrapper = styled.div`
   position: relative;
   width: 100%;
 
@@ -146,7 +143,7 @@ const DateInputWrapper = styled.div`
   }
 `;
 
-const DateInput = styled.input`
+export const DateInput = styled.input`
   width: 100%;
   padding: 12px 40px 12px 12px;
   border: 2px solid #e2e8f0;
@@ -184,14 +181,14 @@ const DateInput = styled.input`
   }
 `;
 
-const ButtonGroup = styled.div`
+export const ButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 8px;
 `;
 
-const Button = styled.button<{ primary?: boolean }>`
+export const Button = styled.button<{ primary?: boolean }>`
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
@@ -230,84 +227,3 @@ const Button = styled.button<{ primary?: boolean }>`
     }
   `}
 `;
-
-interface TaskModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (text: string, date: string) => void;
-  defaultDate: string;
-}
-
-const TaskModal = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  defaultDate,
-}: TaskModalProps) => {
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState(defaultDate);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (description.trim()) {
-      onSubmit(description.trim(), date);
-      setDescription("");
-      onClose();
-    }
-  };
-
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  return (
-    <ModalOverlay onClick={handleOverlayClick}>
-      <ModalContent>
-        <CloseButton onClick={onClose}>
-          <FaTimes size={16} />
-        </CloseButton>
-        <Title>Create New Task</Title>
-        <Form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label htmlFor="description">Description</Label>
-            <TextArea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What needs to be done?"
-              autoFocus
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="date">
-              <FaRegCalendarAlt size={14} />
-              Due Date
-            </Label>
-            <DateInputWrapper>
-              <DateInput
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </DateInputWrapper>
-          </FormGroup>
-          <ButtonGroup>
-            <Button type="button" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" primary>
-              Create Task
-            </Button>
-          </ButtonGroup>
-        </Form>
-      </ModalContent>
-    </ModalOverlay>
-  );
-};
-
-export default TaskModal;
